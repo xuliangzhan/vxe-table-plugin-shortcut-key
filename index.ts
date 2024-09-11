@@ -1,5 +1,5 @@
 import XEUtils from 'xe-utils'
-import { VXETableCore, InterceptorKeydownParams } from 'vxe-table'
+import { VXETableCore } from 'vxe-table'
 
 /**
  * 功能键
@@ -82,7 +82,7 @@ export interface ShortcutKeyConf {
 }
 
 export interface ShortcutKeyListenerConfig {
-  [funcName: string]: (params: InterceptorKeydownParams, evnt: any) => any;
+  [funcName: string]: (params: any, evnt: any) => any;
 }
 
 export interface ShortcutKeySettingConfig {
@@ -107,7 +107,7 @@ export class SKey {
     this.kConf = kConf
   }
 
-  [SKEY_NANE.TRIGGER] (params: InterceptorKeydownParams, evnt: any) {
+  [SKEY_NANE.TRIGGER] (params: any, evnt: any) {
     if (!this.specialKey || evnt[`${this.specialKey}Key`]) {
       if (this.funcName && handleFuncs[this.funcName]) {
         return handleFuncs[this.funcName](params, evnt)
@@ -115,7 +115,7 @@ export class SKey {
     }
   }
 
-  [SKEY_NANE.EMIT] (params: InterceptorKeydownParams, evnt: any) {
+  [SKEY_NANE.EMIT] (params: any, evnt: any) {
     if (!this.specialKey || evnt[`${this.specialKey}Key`]) {
       if (this.kConf && this.kConf.callback) {
         return this.kConf.callback(params, evnt)
@@ -141,12 +141,12 @@ function getEventKey (key: string): string {
   return key
 }
 
-function isTriggerPage (params: InterceptorKeydownParams): boolean {
+function isTriggerPage (params: any): boolean {
   return !params.$table.getActiveRecord()
 }
 
 function handleChangePage (func: string) {
-  return function (params: InterceptorKeydownParams, evnt: any) {
+  return function (params: any, evnt: any) {
     const { $grid, $table } = params
     const { mouseConfig = {} } = $table
     if ($grid && mouseConfig.selected !== true && ['input', 'textarea'].indexOf(evnt.target.tagName.toLowerCase()) === -1 && isTriggerPage(params)) {
@@ -182,7 +182,7 @@ function handleCellEnterMove (isTop: boolean) {
 }
 
 function handleCellMove (arrowIndex: number) {
-  return function (params: InterceptorKeydownParams, evnt: any) {
+  return function (params: any, evnt: any) {
     const $table: any = params.$table
     const selecteParams = $table.getSelectedCell()
     const arrows: number[] = [0, 0, 0, 0]
@@ -195,7 +195,7 @@ function handleCellMove (arrowIndex: number) {
 }
 
 function handleCurrentRowMove (isDown: boolean) {
-  return function (params: InterceptorKeydownParams, evnt: any) {
+  return function (params: any, evnt: any) {
     const $table: any = params.$table
     if ($table.highlightCurrentRow) {
       const currentRow = $table.getCurrentRecord()
@@ -211,7 +211,7 @@ function handleCurrentRowMove (isDown: boolean) {
  * 快捷键处理方法
  */
 export const handleFuncs = {
-  [FUNC_NANE.TABLE_EDIT_ACTIVED] (params: InterceptorKeydownParams, evnt: any) {
+  [FUNC_NANE.TABLE_EDIT_ACTIVED] (params: any, evnt: any) {
     const { $table } = params
     const selected = $table.getSelectedCell()
     if (selected) {
@@ -220,7 +220,7 @@ export const handleFuncs = {
       return false
     }
   },
-  [FUNC_NANE.TABLE_EDIT_CLOSED] (params: InterceptorKeydownParams, evnt: any) {
+  [FUNC_NANE.TABLE_EDIT_CLOSED] (params: any, evnt: any) {
     const { $table } = params
     const { mouseConfig = {} } = $table
     const actived = $table.getActiveRecord()
@@ -249,14 +249,14 @@ export const handleFuncs = {
   [FUNC_NANE.PAGER_NEXT_JUMP]: handleChangePage('nextJump')
 }
 
-function runEvent (key: string, maps: any, prop: SKEY_NANE, params: InterceptorKeydownParams, evnt: any) {
+function runEvent (key: string, maps: any, prop: SKEY_NANE, params: any, evnt: any) {
   const skeyList: SKey[] = maps[key.toLowerCase()]
   if (skeyList) {
     return !skeyList.some((skey: SKey) => skey[prop](params, evnt) === false)
   }
 }
 
-function handleShortcutKeyEvent (params: InterceptorKeydownParams, e: any) {
+function handleShortcutKeyEvent (params: any, e: any) {
   const evnt = params.$event || e
   const key: string = getEventKey(evnt.key)
   if (!runEvent(key, disabledMaps, SKEY_NANE.EMIT, params, evnt)) {
@@ -354,7 +354,7 @@ export const VXETablePluginShortcutKey = {
     if (options) {
       pluginSetup(options)
     }
-    vxetable.interceptor.add('event.keydown', handleShortcutKeyEvent)
+    vxetable.interceptor.add('event.keydown', handleShortcutKeyEvent as any)
   }
 }
 
